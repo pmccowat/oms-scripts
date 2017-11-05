@@ -18,7 +18,7 @@ $OMSFolder = 'C:\Source'
 $MMAFile = $OMSFolder + "\" + $FileName
 
 # Start logging the actions
-Start-Transcript -Path C:\OMSAgentInstallLog.txt -NoClobber
+Start-Transcript -Path C:\OMSAgentInstallLog.txt -NoClobber -Append 
 
 # Check if folder exists, if not, create it
  if (Test-Path $OMSFolder){
