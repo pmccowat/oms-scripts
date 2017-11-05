@@ -7,14 +7,8 @@ Twitter: 	@DanielOrneling
 #>
 
 # Set the Workspace ID and Primary Key for the Log Analytics workspace.
-<[CmdletBinding(SupportsShouldProcess=$true)]
 param(
-    [parameter(Mandatory=$true, HelpMessage="The ID of the Log Analytics workspace you want to connect the agent to.")]
-    [ValidateNotNullOrEmpty()]
     [string]$WorkSpaceID,
-
-    [parameter(Mandatory=$true, HelpMessage="The primary key of the Log Analytics workspace you want to connect the agent to.")]
-    [ValidateNotNullOrEmpty()]
     [string]$WorkSpaceKey
 )
 
