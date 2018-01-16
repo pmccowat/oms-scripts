@@ -29,15 +29,17 @@ pushd "C:\ProgramData\sysmon\"
 echo [+] Downloading Sysmon...
 @powershell (new-object System.Net.WebClient).DownloadFile('https://live.sysinternals.com/Sysmon64.exe','C:\ProgramData\sysmon\sysmon64.exe')"
 echo [+] Downloading Sysmon config...
-@powershell (new-object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/ion-storm/sysmon-config/master/sysmonconfig-export.xml','C:\ProgramData\sysmon\sysmonconfig-export.xml')"
-@powershell (new-object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/ion-storm/sysmon-config/master/Auto_Update.bat','C:\ProgramData\sysmon\Auto_Update.bat')"
+@powershell (new-object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml','C:\ProgramData\sysmon\sysmonconfig-export.xml')"
+@powershell (new-object System.Net.WebClient).DownloadFile('https://lgdatastorage.blob.core.windows.net/oms/Auto_Update.bat','C:\ProgramData\sysmon\Auto_Update.bat')"
+@powershell (new-object System.Net.WebClient).DownloadFile('https://lgdatastorage.blob.core.windows.net/oms/sysmon-schema-4.ps1','C:\ProgramData\sysmon\sysmon-schema-4.ps1')"
+PowerShell -NoProfile -ExecutionPolicy Bypass -Command C:\ProgramData\sysmon\sysmon-schema-4.ps1
 sysmon64.exe -accepteula -i sysmonconfig-export.xml
-sc failure Sysmon64 actions= restart/10000/restart/10000// reset= 120
+sc failure Sysmon actions= restart/10000/restart/10000// reset= 120
 echo [+] Sysmon Successfully Installed!
 echo [+] Creating Auto Update Task set to Hourly..
 SchTasks /Create /RU SYSTEM /RL HIGHEST /SC HOURLY /TN Update_Sysmon_Rules /TR C:\ProgramData\sysmon\Auto_Update.bat /F /ST %tasktime%
 
-sc sdset Sysmon64 D:(D;;DCLCWPDTSD;;;IU)(D;;DCLCWPDTSD;;;SU)(D;;DCLCWPDTSD;;;BA)(A;;CCLCSWLOCRRC;;;IU)(A;;CCLCSWLOCRRC;;;SU)(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)
+sc sdset Sysmon D:(D;;DCLCWPDTSD;;;IU)(D;;DCLCWPDTSD;;;SU)(D;;DCLCWPDTSD;;;BA)(A;;CCLCSWLOCRRC;;;IU)(A;;CCLCSWLOCRRC;;;SU)(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)
 
 timeout /t 10
 exit
