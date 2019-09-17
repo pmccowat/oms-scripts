@@ -57,6 +57,54 @@ Function Download-Chrome {
     }
 }
 
+Function Download-Templates {
+Write-Host 'Downloading Templates... ' -NoNewLine
+    # Test internet connection
+        if (Test-Connection google.com -Count 3 -Quiet) {
+         # Download the installer from Google
+        try {
+	        New-Item -ItemType Directory "$TempDirectory" -Force | Out-Null
+	        (New-Object System.Net.WebClient).DownloadFile("https://dl.google.com/dl/edgedl/chrome/policy/policy_templates.zip", "$TempDirectory\policy_templates.zip")
+            Write-Host 'success!' -ForegroundColor Green
+        } catch {
+	        Write-Host 'failed. There was a problem with the download.' -ForegroundColor Red
+            if ($RunScriptSilent -NE $True){
+                Read-Host 'Press [Enter] to exit'
+            }
+	        exit
+        }
+    } else {
+    Write-Host "failed. Unable to connect to Google's servers." -ForegroundColor Red
+        if ($RunScriptSilent -NE $True){
+            Read-Host 'Press [Enter] to exit'
+        }
+	    exit
+    }
+}
+
+Function Extract-Templates {
+    Expand-Archive "$TempDirectory\policy_templates.zip" -DestinationPath "$TempDirectory\policy_templates" -Force
+    Copy-Item "$TempDirectory\policy_templates\windows\admx\chrome.admx" "c:\Windows\PolicyDefinitions\"-Force
+    Copy-Item "$TempDirectory\policy_templates\windows\admx\google.admx" "c:\Windows\PolicyDefinitions\"-Force
+    Copy-Item "$TempDirectory\policy_templates\windows\admx\en-GB\*" "c:\Windows\PolicyDefinitions\en-GB"-Force -Recurse
+    Copy-Item "$TempDirectory\policy_templates\windows\admx\en-US\*" "c:\Windows\PolicyDefinitions\en-US" -Force  -Recurse
+    [Microsoft.Win32.Registry]::SetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome","SafeBrowsingEnabled",1,[Microsoft.Win32.RegistryValueKind]::DWord)
+    [Microsoft.Win32.Registry]::SetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome","DisableSafeBrowsingProceedAnyway",1,[Microsoft.Win32.RegistryValueKind]::DWord)
+    [Microsoft.Win32.Registry]::SetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome","MetricsReportingEnabled",1,[Microsoft.Win32.RegistryValueKind]::DWord)
+    [Microsoft.Win32.Registry]::SetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome","RemoteAccessHostAllowClientPairing",0,[Microsoft.Win32.RegistryValueKind]::DWord)
+    [Microsoft.Win32.Registry]::SetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome","RemoteAccessHostFirewallTraversal",0,[Microsoft.Win32.RegistryValueKind]::DWord)
+    [Microsoft.Win32.Registry]::SetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome","RemoteAccessHostRequireCurtain",0,[Microsoft.Win32.RegistryValueKind]::DWord)
+
+    [Microsoft.Win32.Registry]::SetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallBlacklist","1","gbchcmhmhahfdphkhkmpfmihenigjmpp",[Microsoft.Win32.RegistryValueKind]::String)
+    [Microsoft.Win32.Registry]::SetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallBlacklist","2","efaidnbmnnnibpcajpcglclefindmkaj",[Microsoft.Win32.RegistryValueKind]::String)
+
+    [Microsoft.Win32.Registry]::SetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist","1","cjpalhdlnbpafiamejdnhcphjbkeiagm",[Microsoft.Win32.RegistryValueKind]::String)
+    [Microsoft.Win32.Registry]::SetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist","2","gcbommkclmclpchllfjekcdonpmejbdp",[Microsoft.Win32.RegistryValueKind]::String)
+
+    [Microsoft.Win32.Registry]::SetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\RemoteAccessHostClientDomainList","1","lochsandglens.com",[Microsoft.Win32.RegistryValueKind]::String)
+    [Microsoft.Win32.Registry]::SetValue("HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\RemoteAccessHostDomainList","1","lochsandglens.com",[Microsoft.Win32.RegistryValueKind]::String)
+}
+
 Function Install-Chrome {
     Write-Host 'Installing Chrome... ' -NoNewline
 
@@ -82,6 +130,7 @@ Function Clean-Up {
     try {
         # Remove the installer
         Remove-Item "$TempDirectory\Chrome.msi" -ErrorAction Stop
+        Remove-Item "$TempDirectory\policy_templates.zip" -ErrorAction Stop
         Write-Host 'success!' -ForegroundColor Green
     } catch {
         Write-Host "failed. You will have to remove the installer yourself from $TempDirectory\." -ForegroundColor Yellow
@@ -89,6 +138,8 @@ Function Clean-Up {
 }
 
 Download-Chrome
+Download-Templates
+Extract-Templates
 Install-Chrome
 Clean-Up
 
